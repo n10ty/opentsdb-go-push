@@ -1,4 +1,6 @@
-# OPENTSDB metrics push GO client
+# OpenTSDB metrics push GO client
+
+OpenTSDB client helps to send [standardized](http://opentsdb.net/docs/build/html/api_http/put.html) metric to /api/put path.
 
 Client has 2 options to send metrics:
  - Enqueue metrics, send when batchSize collected and flush buffer. Use Push to force send current buffer.
@@ -18,7 +20,7 @@ Example:
 
 ```go
 func main() {
-    client := opentsdb.NewClient("http://localhost:4242", opentsdb.WithBatchSize(30))
+    client := opentsdb.NewClient("http://localhost:4242", opentsdb.WithBatchSize(30), opentsdb.WithAuth("user", "pass"))
 	err := client.Enqueue(opentsdb.Metric{
 		Timestamp: time.Now().Truncate(time.Minute).Unix(),
 		Metric:    "http_response_time",

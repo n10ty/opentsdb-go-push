@@ -16,7 +16,7 @@ const defaultBatchSize = 20
 // - Enqueue metrics, send when batchSize collected and flush buffer. Use Push to force send current buffer.
 // - Send single Metric immediately.
 type Client struct {
-	host      string
+	url       string
 	authUser  string
 	authPass  string
 	buffer    []Metric
@@ -36,22 +36,25 @@ type config struct {
 	batchSize    int
 }
 
-func NewClient(host string, options ...Option) *Client {
+func NewClient(url string, options ...Option) (*Client, error) {
 	config := &config{
 		authUsername: "",
 		authPassword: "",
 		batchSize:    defaultBatchSize,
 	}
 	for _, o := range options {
-		o(config)
+		err := o(config)
+		if err != nil {
+			return nil, fmt.Errorf("failed to construc opentsdb client: %w", err)
+		}
 	}
 
 	return &Client{
-		host:      host,
+		url:       url,
 		authUser:  config.authUsername,
 		authPass:  config.authPassword,
 		batchSize: config.batchSize,
-	}
+	}, nil
 }
 
 // Enqueue send metric to a buffer. Metrics are sent when buffer reaches batchSize number.
@@ -79,7 +82,7 @@ func (c *Client) Send(metric Metric) error {
 }
 
 func (c *Client) send(metric []Metric) error {
-	url := fmt.Sprintf("%s/api/put", c.host)
+	url := fmt.Sprintf("%s/api/put", c.url)
 	m, err := json.Marshal(metric)
 	if err != nil {
 		return err
