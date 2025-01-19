@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 const defaultBatchSize = 20
@@ -96,12 +96,15 @@ func (c *Client) send(metric []Metric) error {
 		req.SetBasicAuth(c.authUser, c.authPass)
 	}
 	req.Header.Add("Content-Type", "application/json")
-	res, err := http.DefaultClient.Do(req)
+	httpClient := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	if res.StatusCode >= 400 {
-		b, err := ioutil.ReadAll(res.Body)
+		b, err := io.ReadAll(res.Body)
 		if err != nil {
 			return err
 		}
